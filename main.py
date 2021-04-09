@@ -57,19 +57,22 @@ with Client("my_account", api_id, api_hash) as app:
     print(f'There are {app.get_history_count(selected_chat.chat_id)} msgs in dialog!')
     messages = []
     for page in tqdm(range(0, app.get_history_count(selected_chat.chat_id)//100)):
-        messages += app.get_history(chat_id=selected_chat.chat_id, limit=100, offset=page)
-
+        messages += app.get_history(chat_id=selected_chat.chat_id, limit=100, offset=page*100)
+    message_dicts = []
     date_list = []
+    a_time = get_averaging_seconds(2)
     for message in tqdm(messages):
-        # date_list.append(message["date"])
-
-        a_time = get_averaging_seconds(2)
         date_list.append(message["date"] // a_time)
+        message_dict = dict(message)
+        message_dicts.append(message_dict)
+
+    df_1 = pd.DataFrame(message_dicts)
     df = pd.DataFrame(date_list)
     df = df.rename(columns={0: 'date'})
-
+    df_1.to_csv("res1.csv")
     fig = pl.hist(df)
     pl.title('date')
     pl.xlabel("value")
     pl.ylabel("Frequency")
-    pl.savefig("abc.png")
+    pl.savefig("ExampleAnalise.png")
+    print("All data will be saved to res.csv file.")
